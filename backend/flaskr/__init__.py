@@ -75,20 +75,15 @@ def create_app(test_config=None):
 
     if len(paginated_questions)==0:
       abort(404)
-
-    categories=Category.query.all()
-    categories_all=[c.format() for c in categories]
-
-    categories_return=[]
-    for cat in categories_all:
-      categories_return.append(cat['type'])
+    categories = Category.query.all()
+    categories = {category.id:category.type for category in categories}
     
     return jsonify({
       'success':True,
       'questions':paginated_questions,
       'total_questions':len(selection),
-      'categories':categories_return,
-      'current_category':categories_return
+      'categories':categories,
+      'current_category':"Null"
       })
 
 
@@ -107,7 +102,7 @@ def create_app(test_config=None):
   '''
   @app.route('/questions/<int:id>',methods=['DELETE'])
   def delete_question(id):
-    question = Question.query.filter(Question.id == id).one_or_none()
+    question = Question.query.filter(Question.id == id).first()
 
     if not question:
       abort(400)
@@ -130,69 +125,98 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
-  @app.route('/questions',methods=['POST'])
-  def add_question():
+  @app.route('/questions', methods=['POST'])
+  def create_question():
+    payload = request.get_json()
+    question = payload.get('question', '')
+    answer = payload.get('answer','')
+    category =  payload.get('category', '')
+    difficulty = payload.get('difficulty', '')
+    if not (question and answer and category and difficulty): abort(422)
+    new_question = Question(question=question, answer=answer, category=category, difficulty=difficulty)
+    new_question.insert()
+    question_id = new_question.id
+    return jsonify({
+      "success": True,
+      "question_id": question_id
+    })
 
-    body=request.get_json()
+  @app.route('/questions/search', methods=['POST'])
+  def search_question():
+    payload = request.get_json()
+    search_term = payload.get('searchTerm', '')
+    if not search_term: abort(422)
+    questions = [question.format() for \
+       question in Question.query.filter(Question.question.ilike('%'+search_term+'%')).all()]
+    return jsonify({
+      "success": True,
+      "total_questions": len(questions),
+      "questions": questions,
+      "current_category": "Null"
+    })
+  # @app.route('/questions',methods=['POST'])
+  # def add_question():
 
-    if not body:
-      abort(400)
+  #   body=request.get_json()
 
-    search_term=body.get('searchTerm',None)
+  #   if not body:
+  #     abort(400)
 
-    if search_term:
-      questions=Question.query.filter(Question.question.contains(search_term)).all()
+  #   search_term=body.get('searchTerm',None)
 
-      if not questions:
-        abort(404)
+  #   if search_term:
+  #     questions=Question.query.filter(Question.question.contains(search_term)).all()
 
-      questions_found=[q.format() for q in questions]
-      questions_asc=Question.query.order_by(Question.id).all()
+  #     if not questions:
+  #       abort(404)
 
-      #query for categories
-      categories=Category.query.all()
-      categories_all=[c.format() for c in categories]
+  #     questions_found=[q.format() for q in questions]
+  #     questions_asc=Question.query.order_by(Question.id).all()
 
-      return jsonify({
-        'success':True,
-        'questions':questions_asc,
-        'total_questions':len(questions_asc),
-        'current_category':categories_all
-        })
+  #     #query for categories
+  #     categories=Category.query.all()
+  #     categories_all=[c.format() for c in categories]
 
-    new_question=body.get('question',None)
-    new_answer=body.get('answer',None)
-    new_category=body.get('category',None)
-    new_difficulty=body.get('difficulty',None)
+  #     return jsonify({
+  #       'success':True,
+  #       'questions':questions_asc,
+  #       'total_questions':len(questions_asc),
+  #       'current_category':categories_all
+  #       })
 
-    if (not new_question) or (not new_answer) or (not new_difficulty) or (not new_category):
-      abort(400)
+  #   new_question=body.get('question',None)
+  #   new_answer=body.get('answer',None)
+  #   new_category=body.get('category',None)
+  #   new_difficulty=body.get('difficulty',None)
+
+  #   if not (new_category,new_question,new_difficulty,new_answer):
+  #     abort(400)
 
 
-    try:
-      question=Question(
-        question=new_question,
-        answer=new_answer,
-        category=new_category,
-        difficulty=new_difficulty
-        )
+  #   try:
+  #     question=Question(
+  #       question=new_question,
+  #       answer=new_answer,
+  #       category=new_category,
+  #       difficulty=new_difficulty
+  #       )
 
-      question.insert()
+  #     question.insert()
 
-      selection=Question.query.filter(Question.id).all()
-      paginated_questions=pagination(request,selection)
+  #     selection=Question.query.filter(Question.id).all()
+  #     paginated_questions=pagination(request,selection)
 
-      #return successful response of paginated questions
+  #     #return successful response of paginated questions
 
-      return jsonify({
-        'successful':True,
-        'created':question.id,
-        'questions':paginated_questions,
-        'total_questions':len(selection)
-        })
+  #     return jsonify({
+  #       'successful':True,
+  #       'created':question.id,
+  #       # 'questions':paginated_questions,
+  #       # 'total_questions':len(selection)
+  #       })
 
-    except:
-      abort(422)
+  #   except:
+  #     abort(422)
 
 
 
@@ -229,22 +253,16 @@ def create_app(test_config=None):
   '''
 
   #-----endpoints for categories---#
-  @app.route('/categories', methods=['GET'])
+  @app.route("/categories")
   def get_categories():
-    categories=Category.query.all()
-    if not categories:
-      abort(404)
-
-    formatted_categories=[c.format() for c in categories]
-    #empty categories list
-    categories_list=[]
-    for cat in formatted_categories:
-      categories_list.append(cat['type'])
-
+    categories = Category.query.all()
+    categories = {category.id:category.type for category in categories}
     return jsonify({
-      'success':True,
-      'categories':categories_list
-      })
+        "success": True,
+        "categories": categories,
+        "total_categories": len(categories)
+    })
+
 
 
 
