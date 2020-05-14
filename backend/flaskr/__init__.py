@@ -3,6 +3,7 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
+import json
 
 from models import setup_db, Question, Category
 
@@ -127,12 +128,13 @@ def create_app(test_config=None):
   '''
   @app.route('/questions', methods=['POST'])
   def create_question():
-    payload = request.get_json()
-    question = payload.get('question', '')
-    answer = payload.get('answer','')
-    category =  payload.get('category', '')
-    difficulty = payload.get('difficulty', '')
-    if not (question and answer and category and difficulty): abort(422)
+    body = request.get_json()
+    question = body.get('question', '')
+    answer = body.get('answer','')
+    category =  body.get('category', '')
+    difficulty = body.get('difficulty', '')
+    if not (question and answer and category and difficulty):
+      abort(422)
     new_question = Question(question=question, answer=answer, category=category, difficulty=difficulty)
     new_question.insert()
     question_id = new_question.id
@@ -143,93 +145,20 @@ def create_app(test_config=None):
 
   @app.route('/questions/search', methods=['POST'])
   def search_question():
-    payload = request.get_json()
-    search_term = payload.get('searchTerm', '')
-    if not search_term: abort(422)
-    questions = [question.format() for \
-       question in Question.query.filter(Question.question.ilike('%'+search_term+'%')).all()]
+    body = request.get_json()
+    search_term = body.get('searchTerm', '')
+    if not search_term:
+      abort(422)
+    question=Question.query.filter(Question.question.contains(search_term)).all()
+    questions=[q.format() for q in question]
+
     return jsonify({
       "success": True,
       "total_questions": len(questions),
       "questions": questions,
       "current_category": "Null"
     })
-  # @app.route('/questions',methods=['POST'])
-  # def add_question():
-
-  #   body=request.get_json()
-
-  #   if not body:
-  #     abort(400)
-
-  #   search_term=body.get('searchTerm',None)
-
-  #   if search_term:
-  #     questions=Question.query.filter(Question.question.contains(search_term)).all()
-
-  #     if not questions:
-  #       abort(404)
-
-  #     questions_found=[q.format() for q in questions]
-  #     questions_asc=Question.query.order_by(Question.id).all()
-
-  #     #query for categories
-  #     categories=Category.query.all()
-  #     categories_all=[c.format() for c in categories]
-
-  #     return jsonify({
-  #       'success':True,
-  #       'questions':questions_asc,
-  #       'total_questions':len(questions_asc),
-  #       'current_category':categories_all
-  #       })
-
-  #   new_question=body.get('question',None)
-  #   new_answer=body.get('answer',None)
-  #   new_category=body.get('category',None)
-  #   new_difficulty=body.get('difficulty',None)
-
-  #   if not (new_category,new_question,new_difficulty,new_answer):
-  #     abort(400)
-
-
-  #   try:
-  #     question=Question(
-  #       question=new_question,
-  #       answer=new_answer,
-  #       category=new_category,
-  #       difficulty=new_difficulty
-  #       )
-
-  #     question.insert()
-
-  #     selection=Question.query.filter(Question.id).all()
-  #     paginated_questions=pagination(request,selection)
-
-  #     #return successful response of paginated questions
-
-  #     return jsonify({
-  #       'successful':True,
-  #       'created':question.id,
-  #       # 'questions':paginated_questions,
-  #       # 'total_questions':len(selection)
-  #       })
-
-  #   except:
-  #     abort(422)
-
-
-
-
-
-
-
-
-
-  
-
-
-
+    
   '''
   @TODO: 
   Create an endpoint to POST a new question, 
@@ -314,6 +243,26 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route('/quizzes', methods=['POST'])
+  def quizzes():
+    data = json.loads(request.data)
+    validation = ['previous_questions', 'quiz_category']
+    for key in validation:
+      if key not in data.keys():
+        abort(400)
+    result = Question.query.filter(Question.id.notin_(data['previous_questions'])).all()
+    questions_unfiltered = [question.format() for question in result]
+    questions_filtered = [question for question in questions_unfiltered if question['category'] == data['quiz_category']['id']]
+    if not questions_filtered:
+      abort(404)
+    question = random.choice(questions_filtered)
+
+    return jsonify({
+      'success': True,
+      'question': question
+    }), 200
+
+
 
   @app.errorhandler(400)
   def bad_request(error):
