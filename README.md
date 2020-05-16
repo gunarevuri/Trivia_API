@@ -14,9 +14,6 @@ There are `TODO` comments throughout project. Start by reading the READMEs in:
 
 We recommend following the instructions in those files in order. This order will look familiar from our prior work in the course.
 
-## Starting and Submitting the Project
-
-[Fork](https://help.github.com/en/articles/fork-a-repo) the [project repository]() and [Clone](https://help.github.com/en/articles/cloning-a-repository) your forked repository to your machine. Work on the project locally and make sure to push all your changes to the remote repository before submitting the link to your repository in the Classroom. 
 
 ## About the Stack
 
