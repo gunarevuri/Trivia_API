@@ -33,130 +33,37 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
-    def test_get_categories(self):
-        res=self.client().get('/categories')
-        body=json.loads(res.data)
-        self.assertEqual(res.status_code,200)
-        self.assertEqual(body['success'],True)
-        self.assertEqual(body['categories'])
-        self.assertEqual(body['total_categories'])
-
-#---GET questions____#
-    def test_get_questions(self):
-        res=self.client().get('/questions')
-        body=json.loads(res.data)
-
-        self.assertEqual(res.status_code,200)
-        self.assertEqual(body['success'],True)
-        self.assertEqual(len(body['questions']))
-
-    def test_questions_get_failure(self):
-        response = self.client().get('/questions?page=3')
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(data['success'])
-        self.assertEqual(data['error'], 404)
-        self.assertEqual(data['message'], 'Not Found')
-
-#---post questions----#
-
-
-    def test_questions_post_True(self):
-        question = 'Which is largest continent in area?'
-        answer = 'Asia'
-        response = self.client().post(
-            '/questions',
-            content_type='application/json',
-            data=json.dumps({
-                'question': question,
-                'answer': answer,
-                'difficulty': 1,
-                'category': 2
-            })
-        )
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 201)
-        self.assertTrue(data['success'])
-        self.assertEqual(data['data']['question'], question)
-        self.assertEqual(data['data']['answer'], answer)
-
-    def test_questions_post_failure(self):
-        question = 'Which is largest continent in area?'
-        answer = 'Asia'
-        response = self.client().post(
-            '/questions',
-            content_type='application/json',
-            data=json.dumps({
-                'question': '',
-                'answer': answer,
-                'difficulty': 1,
-                'category': 3
-            })
-        )
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(data['success'])
-        self.assertEqual(data['error'], 400)
-        self.assertEqual(data['message'], 'Bad Request')
-
-
-#----search questions______
-
-
-    def test_questions_search_success(self):
-        response = self.client().post(
-            '/questions',
-            content_type='application/json',
-            data=json.dumps({
-                'searchTerm': 'autobiography'
-            }))
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(data['success'])
-        self.assertTrue(data['questions'])
-        self.assertTrue(data['total_questions'])
-
-     def test_questions_search_failure(self):
-        response = self.client().post(
-            '/questions',
-            content_type='application/json',
-            data=json.dumps({
-                'searchTerm': 'abcdefg'
-            }))
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(data['success'])
-        self.assertEqual(data['error'], 404)
-        self.assertEqual(data['message'], 'Not Found')
-
-
-#----delete question-----3
-        
-
-    def test_questions_delete_success(self):
-        response = self.client().delete('/questions/6')
+    def test_get_categories__success(self):
+        response = self.client().get('/categories')
         data = json.loads(response.data)
 
         self.assertTrue(response.status_code, 200)
-        self.assertTrue(data['success'])
+        self.assertTrue(data['success'], True)
 
-    
-    def test_questions_delete_failure(self):
-        response = self.client().delete('/questions/6234')
+    '''------------------------------------------------------------------------------------------
+    test endpoint to handle GET requests for questions, including pagination (every 10 questions)
+    ------------------------------------------------------------------------------------------'''
+    def test_get_questions_success(self):
+        response = self.client().get('/questions')
+        data = json.loads(response.data)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['categories'])
+        self.assertTrue(data['total_questions'])
+
+    def test_get_questions_failure(self):
+        response = self.client().get('/questions?page=54')
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(data['success'])
+        self.assertFalse(data['success'],True)
         self.assertEqual(data['error'], 404)
-        self.assertEqual(data['message'], 'Not Found')
 
-
-#----questions based on  category---
+    '''------------------------------------------------------------------------------------------
+    test GET endpoint to get questions based on category
+    ------------------------------------------------------------------------------------------'''
     def test_questions_get_by_category_success(self):
         response = self.client().get('/categories/1/questions')
         data = json.loads(response.data)
@@ -173,9 +80,102 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(data['success'])
-        self.assertEqual(data['error'], 404)
-        self.assertEqual(data['message'], 'Not Found')
+        self.assertEqual(data['error'], 400)
 
+    '''------------------------------------------------------------------------------------------
+    test endpoint to DELETE question using a question ID
+    ------------------------------------------------------------------------------------------'''
+    def test_delete_questions_by_id_success(self):
+        response = self.client().delete('/questions/10')
+        data = json.loads(response.data)
+
+        self.assertTrue(response.status_code, 200)
+        self.assertTrue(data['success'],True)
+
+    
+    def test_questions_delete_failure(self):
+        response = self.client().delete('/questions/6234')
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(data['success'],False)
+        self.assertEqual(data['error'], 400)
+
+    '''------------------------------------------------------------------------------------------
+    test endpoint to POST a new question
+    ------------------------------------------------------------------------------------------'''
+    def test_questions_post_success(self):
+        question = 'Which german city has the largest population?'
+        answer = 'Berlin'
+        response = self.client().post(
+            '/questions',
+            content_type='application/json',
+            data=json.dumps({
+                'question': question,
+                'answer': answer,
+                'difficulty': 1,
+                'category': 3
+            })
+        )
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(data['success'])
+        self.assertEqual(data['data']['question'], question)
+        self.assertEqual(data['data']['answer'], answer)
+
+    def test_questions_post_failure(self):
+        question = 'biggest continent in world?'
+        answer = 'Berlin'
+        response = self.client().post(
+            '/questions',
+            content_type='application/json',
+            data=json.dumps({
+                'question': '',
+                'answer': answer,
+                'difficulty': 1,
+                'category': 3
+            })
+        )
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 422)
+        self.assertEqual(data['message'], 'Bad Request')
+    
+    '''------------------------------------------------------------------------------------------
+    test POST endpoint to get questions based on a search term
+    ------------------------------------------------------------------------------------------'''
+    def test_questions_search_success(self):
+        response = self.client().post(
+            '/questions/search',
+            content_type='application/json',
+            data=json.dumps({
+                'searchTerm': 'autobiography'
+            }))
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+
+    def test_questions_search_failure(self):
+        response = self.client().post(
+            '/questions',
+            content_type='application/json',
+            data=json.dumps({
+                'searchTerm': 'xyz'
+            }))
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 422)
+        #self.assertEqual(data['message'], 'Not Found')
+
+   
 
 
 # Make the tests conveniently executable
