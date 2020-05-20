@@ -1,33 +1,60 @@
 # Full Stack API Final Project
+It is a full stack API including two models(Tables
+Database : Postgresql
+Frontend : React
+Backend  : Flask
+API keys : Not needed
+Authentication : not implemented
 
-## Full Stack Trivia
+This project is a flask framework based application, which includes two models(Tables)  Questions and Categories having a One-to-one relationship between those two models. Each model had different Endpoints includes GET, POST, PATCH, DELETE, search pattern also implemented to search for a specific question. We can get questions for each category by clicking that endpoint.API keys and  Authentication were not implemented in this project. We can use either Curl or postman to test endpoints and can check those responses. Error-handling methods also implemented for each endpoint. 
 
-Udacity is invested in creating bonding experiences for its employees and students. A bunch of team members got the idea to hold trivia on a regular basis and created a  webpage to manage the trivia app and play the game, but their API experience is limited and still needs to be built out. 
+Go through README.md file in /backend directory to get full documentation about API implementation and endpoint testing.
 
-
-## Tasks
-
-There are `TODO` comments throughout project. Start by reading the READMEs in:
-
-1. [`./frontend/`](./frontend/README.md)
-2. [`./backend/`](./backend/README.md)
-
-We recommend following the instructions in those files in order. This order will look familiar from our prior work in the course.
+To test this application first clone the project using url in the terminal.
 
 
-## About the Stack
+```
+git clone https://github.com/gunarevuri/Trivia_API.git
+```
 
-We started the full stack application for you. It is desiged with some key functional areas:
+make sure you are using vertual environment for the project. To enable vertual environment copy these commnads if you are using mac
 
-### Backend
+```
+cd  /project_directory
 
-The `./backend` directory contains a partially completed Flask and SQLAlchemy server. You will work primarily in app.py to define your endpoints and can reference models.py for DB and SQLAlchemy setup. 
+python3 -m venv env
 
-### Frontend
+source env/bin/activate
 
-The `./frontend` directory contains a complete React frontend to consume the data from the Flask server. You will need to update the endpoints after you define them in the backend. Those areas are marked with TODO and can be searched for expediency. 
+```
 
-Pay special attention to what data the frontend is expecting from each API response to help guide how you format your API. 
 
-[View the README.md within ./frontend for more details.](./frontend/README.md)
-# Trivia_API
+After cloning make sure you have to run backend before running frontend.
+
+```
+cd frontend
+
+npm i 
+
+(or)
+
+npm install
+ 
+```
+
+then npm will take care of all the required packages to run application.After installing required package run below command
+
+```
+npm start
+
+```
+
+After you runnin bash npm start react automatically loads all required packages from package.json file.Automatically you redicted to http://localhost:3000 url.
+
+Then open another tab in terminal and go to backend directory and make sure you have enabled vertual environment.
+
+Go to README.md file in backend directory and which had detailed information how to start flask application.
+
+
+
+
