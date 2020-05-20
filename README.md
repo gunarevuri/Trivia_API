@@ -1,10 +1,17 @@
 # Full Stack API Final Project
-It is a full stack API including two models(Tables
-Database : Postgresql
-Frontend : React
-Backend  : Flask
-API keys : Not needed
-Authentication : not implemented
+
+#### Database : Postgresql
+
+#### Frontend : React
+
+#### Backend  : Flask
+
+#### API keys : Not needed
+
+#### Authentication : not implemented
+
+### Overview
+
 
 This project is a flask framework based application, which includes two models(Tables)  Questions and Categories having a One-to-one relationship between those two models. Each model had different Endpoints includes GET, POST, PATCH, DELETE, search pattern also implemented to search for a specific question. We can get questions for each category by clicking that endpoint.API keys and  Authentication were not implemented in this project. We can use either Curl or postman to test endpoints and can check those responses. Error-handling methods also implemented for each endpoint. 
 
