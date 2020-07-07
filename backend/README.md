@@ -33,7 +33,7 @@ This will install all of the required packages we selected within the `requireme
 
 ## Database Setup
 In this project we use postgres database for backend. you can use sqlite also by updating in config file.
-With Postgres running, restore a database using the trivia.psql file provided. From the backend folder in terminal run:
+With Postgresql running, restore a database using the trivia.psql file provided. From the backend folder in terminal run:
 ```bash
 psql trivia < trivia.psql
 ```
